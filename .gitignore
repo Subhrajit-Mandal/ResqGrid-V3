@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.sites-runtime/
+ai/artifacts/*
+!ai/artifacts/.gitkeep
+.pio/
+test-results/
+playwright-report/
+iot/firmware/include/device_config.h

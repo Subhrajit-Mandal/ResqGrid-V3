@@ -1,0 +1,40 @@
+{
+  "$defs": {
+    "Status": {
+      "enum": [
+        "New",
+        "Acknowledged",
+        "Assigned",
+        "En route",
+        "On scene",
+        "Resolved",
+        "Closed"
+      ],
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "$ref": "#/$defs/Status"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "title": "Expected Version",
+      "type": "integer"
+    },
+    "reason": {
+      "default": "",
+      "maxLength": 300,
+      "title": "Reason",
+      "type": "string"
+    }
+  },
+  "required": [
+    "status",
+    "expected_version"
+  ],
+  "title": "Transition",
+  "type": "object"
+}

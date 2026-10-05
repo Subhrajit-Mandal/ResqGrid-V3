@@ -1,0 +1,218 @@
+{
+  "$defs": {
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Longitude",
+          "type": "number"
+        },
+        "source": {
+          "enum": [
+            "gps",
+            "manual",
+            "provisioned",
+            "simulated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "accuracy_m": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracy M"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "source",
+        "captured_at"
+      ],
+      "title": "Location",
+      "type": "object"
+    },
+    "Measurement": {
+      "additionalProperties": false,
+      "properties": {
+        "sensor_id": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Sensor Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "temperature",
+            "humidity",
+            "rainfall",
+            "water_level",
+            "soil_moisture",
+            "smoke",
+            "wind_speed",
+            "wind_direction"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "maxLength": 20,
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "window_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Window Seconds"
+        }
+      },
+      "required": [
+        "sensor_id",
+        "kind",
+        "value",
+        "unit"
+      ],
+      "title": "Measurement",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "message_id": {
+      "maxLength": 160,
+      "minLength": 8,
+      "title": "Message Id",
+      "type": "string"
+    },
+    "device_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Device Id",
+      "type": "string"
+    },
+    "node_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Node Id",
+      "type": "string"
+    },
+    "zone_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "boot_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Boot Id",
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "title": "Observed At",
+      "type": "string"
+    },
+    "firmware_version": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Firmware Version",
+      "type": "string"
+    },
+    "location": {
+      "$ref": "#/$defs/Location"
+    },
+    "measurements": {
+      "items": {
+        "$ref": "#/$defs/Measurement"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "title": "Measurements",
+      "type": "array"
+    },
+    "battery_percent": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Battery Percent"
+    },
+    "source_mode": {
+      "enum": [
+        "hardware",
+        "simulated",
+        "replay"
+      ],
+      "title": "Source Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message_id",
+    "device_id",
+    "node_id",
+    "zone_id",
+    "boot_id",
+    "sequence",
+    "observed_at",
+    "firmware_version",
+    "location",
+    "measurements",
+    "source_mode"
+  ],
+  "title": "Telemetry",
+  "type": "object"
+}

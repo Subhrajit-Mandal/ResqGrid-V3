@@ -1,0 +1,126 @@
+{
+  "$defs": {
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Longitude",
+          "type": "number"
+        },
+        "source": {
+          "enum": [
+            "gps",
+            "manual",
+            "provisioned",
+            "simulated"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "accuracy_m": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accuracy M"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "source",
+        "captured_at"
+      ],
+      "title": "Location",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "submission_id": {
+      "maxLength": 100,
+      "minLength": 8,
+      "title": "Submission Id",
+      "type": "string"
+    },
+    "category": {
+      "enum": [
+        "Medical",
+        "Fire",
+        "Flood",
+        "Trapped",
+        "Missing person",
+        "Evacuation",
+        "Infrastructure danger",
+        "Other"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "people": {
+      "maximum": 1000,
+      "minimum": 1,
+      "title": "People",
+      "type": "integer"
+    },
+    "zone_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "location": {
+      "$ref": "#/$defs/Location"
+    },
+    "landmark": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Landmark",
+      "type": "string"
+    },
+    "description": {
+      "default": "",
+      "maxLength": 1000,
+      "title": "Description",
+      "type": "string"
+    },
+    "source_mode": {
+      "default": "simulated",
+      "enum": [
+        "hardware",
+        "simulated"
+      ],
+      "title": "Source Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "submission_id",
+    "category",
+    "people",
+    "zone_id",
+    "location",
+    "landmark"
+  ],
+  "title": "SOS",
+  "type": "object"
+}

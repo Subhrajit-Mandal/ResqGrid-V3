@@ -1,0 +1,45 @@
+-- Run as a migration owner in a NEW Supabase project, never against legacy V1/V2.
+begin;
+create extension if not exists postgis;
+create schema if not exists resqgrid;
+create function resqgrid.actor_id() returns text language sql stable as $$ select nullif(current_setting('resqgrid.actor_id',true),'') $$;
+create function resqgrid.has_role(requested text) returns boolean language sql stable as $$ select coalesce(current_setting('resqgrid.actor_roles',true),'')::text like '%' || '|' || requested || '|' || '%' $$;
+create table resqgrid.profiles(user_id uuid primary key references auth.users(id),display_name text,created_at timestamptz not null default now());
+create table resqgrid.roles(name text primary key);
+insert into resqgrid.roles values ('citizen'),('agency_operator'),('agency_coordinator'),('intelligence_operator'),('platform_admin'),('publish_alert');
+create table resqgrid.user_roles(user_id uuid references auth.users(id),role text references resqgrid.roles(name),primary key(user_id,role));
+create table resqgrid.citizen_profiles(user_id uuid primary key references auth.users(id),contact_preference text);
+create table resqgrid.zones(id text primary key,name text not null,boundary geometry(MultiPolygon,4326),version integer not null default 1);
+create index zones_boundary_idx on resqgrid.zones using gist(boundary);
+create table resqgrid.agencies(id text primary key,name text not null,verified boolean not null default false,capabilities text[] not null default '{}',zone_ids text[] not null default '{}',base_location geography(Point,4326));
+create table resqgrid.agency_members(user_id uuid references auth.users(id),agency_id text references resqgrid.agencies(id),active boolean not null default true,primary key(user_id,agency_id));
+create table resqgrid.teams(id text primary key,agency_id text not null references resqgrid.agencies(id),name text not null);
+create table resqgrid.resources(id text primary key,agency_id text not null references resqgrid.agencies(id),name text not null,kind text not null check(kind in ('team','vehicle','boat','equipment')),capacity integer not null check(capacity>=0),status text not null check(status in ('Available','Assigned','Maintenance')),incident_id text,version integer not null default 1);
+create table resqgrid.shelters(id text primary key,name text not null,zone_id text references resqgrid.zones(id),location geography(Point,4326),capacity integer check(capacity>=0),occupancy integer check(occupancy>=0),verified_at timestamptz,status text not null default 'unknown',public_details jsonb not null default '{}');
+create table resqgrid.devices(id text primary key,node_id text not null unique,zone_id text not null references resqgrid.zones(id),sensor_channels jsonb not null,location geography(Point,4326),firmware_version text,calibration_state text not null default 'unknown',active boolean not null default true);
+create table resqgrid.disaster_events(id text primary key,hazard text not null,zone_id text references resqgrid.zones(id),started_at timestamptz not null,ended_at timestamptz);
+create table resqgrid.incidents(id text primary key,reporter_id uuid not null references auth.users(id),submission_id text not null,request_hash text not null,category text not null,people integer not null check(people between 1 and 1000),zone_id text not null references resqgrid.zones(id),status text not null check(status in ('New','Acknowledged','Assigned','En route','On scene','Resolved','Closed')),priority text not null check(priority in ('Critical','High','Moderate')),agency_id text references resqgrid.agencies(id),team_id text references resqgrid.resources(id),version integer not null default 1,created_at timestamptz not null default now(),unique(reporter_id,submission_id));
+alter table resqgrid.resources add foreign key(incident_id) references resqgrid.incidents(id);
+create index incidents_queue_idx on resqgrid.incidents(agency_id,status,created_at);
+create table resqgrid.incident_details(incident_id text primary key references resqgrid.incidents(id),location geography(Point,4326) not null,submission jsonb not null);
+create table resqgrid.incident_assignments(id text primary key,incident_id text not null references resqgrid.incidents(id),agency_id text not null references resqgrid.agencies(id),team_id text references resqgrid.resources(id),responsibility text not null check(responsibility in ('lead','support')),active boolean not null default true,created_at timestamptz not null default now());
+create unique index one_active_lead on resqgrid.incident_assignments(incident_id) where active and responsibility='lead';
+create table resqgrid.incident_status_history(id bigint generated always as identity primary key,incident_id text not null references resqgrid.incidents(id),actor_id uuid not null references auth.users(id),status text not null,reason text,created_at timestamptz not null default now());
+create table resqgrid.emergency_messages(id text primary key,incident_id text not null references resqgrid.incidents(id),sender_id uuid not null references auth.users(id),text text not null check(length(text) between 1 and 1000),created_at timestamptz not null default now());
+create table resqgrid.alerts(id text primary key,zone_id text not null references resqgrid.zones(id),payload jsonb not null,status text not null default 'Draft',version integer not null default 1,expires_at timestamptz not null,publisher_id uuid references auth.users(id),published_at timestamptz);
+create table resqgrid.alert_deliveries(id bigint generated always as identity primary key,alert_id text not null references resqgrid.alerts(id),channel text not null,recipient_ref text,status text not null,attempts integer not null default 0,last_error_code text);
+create table resqgrid.audit_logs(id bigint generated always as identity primary key,actor_id text not null,action text not null,object_id text not null,created_at timestamptz not null default now());
+create table resqgrid.jobs(id bigint generated always as identity primary key,kind text not null,source_id text not null,payload jsonb not null default '{}',state text not null default 'pending',attempts integer not null default 0,next_attempt_at timestamptz not null default now(),lease_until timestamptz,last_error_code text,unique(kind,source_id));
+create index jobs_pending_idx on resqgrid.jobs(state,next_attempt_at);
+create table resqgrid.outbox(id bigint generated always as identity primary key,event_id text not null unique,event_type text not null,object_id text not null,created_at timestamptz not null default now(),processed_at timestamptz);
+create table resqgrid.risk_configurations(id text primary key,version integer not null,parameters jsonb not null,validated boolean not null default false,created_at timestamptz not null default now());
+create table resqgrid.model_activations(hazard text primary key,artifact_checksum text not null,manifest_ref text not null,approved_by uuid references auth.users(id),activated_at timestamptz);
+create table resqgrid.recovery_assessments(id text primary key,event_id text references resqgrid.disaster_events(id),zone_id text references resqgrid.zones(id),findings jsonb not null,state text not null default 'Draft',reviewed_by uuid references auth.users(id));
+-- Business schema is NOT exposed through the browser Data API.
+revoke all on schema resqgrid from anon,authenticated;
+-- Application role is provisioned separately with a secret; never use postgres/bypassrls in API.
+do $$ begin if not exists(select 1 from pg_roles where rolname='resqgrid_api') then create role resqgrid_api nologin nobypassrls; end if; end $$;
+grant usage on schema resqgrid to resqgrid_api;
+grant select,insert,update on all tables in schema resqgrid to resqgrid_api;
+grant usage,select on all sequences in schema resqgrid to resqgrid_api;
+commit;

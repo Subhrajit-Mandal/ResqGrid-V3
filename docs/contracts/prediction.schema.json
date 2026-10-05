@@ -1,0 +1,153 @@
+{
+  "$defs": {
+    "Hazard": {
+      "enum": [
+        "flood",
+        "forest-fire",
+        "drought",
+        "heat-wave"
+      ],
+      "title": "Hazard",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "prediction_id": {
+      "title": "Prediction Id",
+      "type": "string"
+    },
+    "hazard": {
+      "$ref": "#/$defs/Hazard"
+    },
+    "zone_id": {
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "target": {
+      "title": "Target",
+      "type": "string"
+    },
+    "horizon_seconds": {
+      "exclusiveMinimum": 0,
+      "title": "Horizon Seconds",
+      "type": "integer"
+    },
+    "probability": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Probability"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "confidence_method": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence Method"
+    },
+    "model_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Version"
+    },
+    "feature_schema_version": {
+      "title": "Feature Schema Version",
+      "type": "string"
+    },
+    "feature_snapshot": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Feature Snapshot",
+      "type": "object"
+    },
+    "source_reading_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Reading Ids",
+      "type": "array"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "applicability": {
+      "enum": [
+        "valid",
+        "insufficient_evidence",
+        "model_unavailable"
+      ],
+      "title": "Applicability",
+      "type": "string"
+    },
+    "source_mode": {
+      "enum": [
+        "hardware",
+        "simulated",
+        "mixed",
+        "replay"
+      ],
+      "title": "Source Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "prediction_id",
+    "hazard",
+    "zone_id",
+    "target",
+    "horizon_seconds",
+    "feature_schema_version",
+    "feature_snapshot",
+    "source_reading_ids",
+    "timestamp",
+    "applicability",
+    "source_mode"
+  ],
+  "title": "Prediction",
+  "type": "object"
+}

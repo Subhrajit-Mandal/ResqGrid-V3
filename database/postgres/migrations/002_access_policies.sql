@@ -1,0 +1,42 @@
+begin;
+alter table resqgrid.profiles enable row level security;
+alter table resqgrid.user_roles enable row level security;
+alter table resqgrid.citizen_profiles enable row level security;
+alter table resqgrid.agency_members enable row level security;
+alter table resqgrid.incidents enable row level security;
+alter table resqgrid.incident_details enable row level security;
+alter table resqgrid.emergency_messages enable row level security;
+alter table resqgrid.incident_status_history enable row level security;
+alter table resqgrid.incident_assignments enable row level security;
+alter table resqgrid.alerts enable row level security;
+alter table resqgrid.audit_logs enable row level security;
+create policy profiles_own on resqgrid.profiles for select to resqgrid_api using(user_id::text=resqgrid.actor_id());
+create policy roles_own on resqgrid.user_roles for select to resqgrid_api using(user_id::text=resqgrid.actor_id());
+create policy citizen_own on resqgrid.citizen_profiles for select to resqgrid_api using(user_id::text=resqgrid.actor_id());
+create policy memberships_own on resqgrid.agency_members for select to resqgrid_api using(user_id::text=resqgrid.actor_id());
+create function resqgrid.agency_access(target_agency text,target_zone text,unassigned boolean default false) returns boolean language sql stable as $$
+ select exists(select 1 from resqgrid.agency_members m join resqgrid.agencies a on a.id=m.agency_id where m.user_id::text=resqgrid.actor_id() and m.active and a.verified and (a.id=target_agency or unassigned and target_zone=any(a.zone_ids)))
+$$;
+create policy incidents_read on resqgrid.incidents for select to resqgrid_api using(reporter_id::text=resqgrid.actor_id() or resqgrid.agency_access(agency_id,zone_id,agency_id is null));
+create policy incidents_create on resqgrid.incidents for insert to resqgrid_api with check(reporter_id::text=resqgrid.actor_id() and resqgrid.has_role('citizen') and agency_id is null and status='New');
+create policy incidents_update on resqgrid.incidents for update to resqgrid_api using((resqgrid.has_role('agency_operator') or resqgrid.has_role('agency_coordinator')) and resqgrid.agency_access(agency_id,zone_id,agency_id is null)) with check(resqgrid.agency_access(agency_id,zone_id,false));
+create policy details_read on resqgrid.incident_details for select to resqgrid_api using(exists(select 1 from resqgrid.incidents i where i.id=incident_id and (i.reporter_id::text=resqgrid.actor_id() or resqgrid.agency_access(i.agency_id,i.zone_id,false))));
+create policy details_create on resqgrid.incident_details for insert to resqgrid_api with check(exists(select 1 from resqgrid.incidents i where i.id=incident_id and i.reporter_id::text=resqgrid.actor_id()));
+create policy messages_access on resqgrid.emergency_messages for select to resqgrid_api using(exists(select 1 from resqgrid.incident_details d where d.incident_id=emergency_messages.incident_id));
+create policy messages_create on resqgrid.emergency_messages for insert to resqgrid_api with check(sender_id::text=resqgrid.actor_id() and exists(select 1 from resqgrid.incident_details d where d.incident_id=emergency_messages.incident_id));
+create policy history_read on resqgrid.incident_status_history for select to resqgrid_api using(exists(select 1 from resqgrid.incidents i where i.id=incident_id));
+create policy history_create on resqgrid.incident_status_history for insert to resqgrid_api with check(actor_id::text=resqgrid.actor_id() and exists(select 1 from resqgrid.incidents i where i.id=incident_id));
+create policy assignments_read on resqgrid.incident_assignments for select to resqgrid_api using(exists(select 1 from resqgrid.incidents i where i.id=incident_id));
+create policy assignments_create on resqgrid.incident_assignments for insert to resqgrid_api with check(resqgrid.has_role('agency_coordinator') and resqgrid.agency_access(agency_id,'',false));
+create policy assignments_update on resqgrid.incident_assignments for update to resqgrid_api using(resqgrid.agency_access(agency_id,'',false)) with check(resqgrid.agency_access(agency_id,'',false));
+create policy alerts_read on resqgrid.alerts for select to resqgrid_api using(status='Published' and expires_at>now() or resqgrid.has_role('intelligence_operator') or resqgrid.has_role('publish_alert'));
+create policy alerts_create on resqgrid.alerts for insert to resqgrid_api with check(status='Draft' and (resqgrid.has_role('intelligence_operator') or resqgrid.has_role('publish_alert')));
+create policy alerts_update on resqgrid.alerts for update to resqgrid_api using(resqgrid.has_role('publish_alert')) with check(resqgrid.has_role('publish_alert'));
+create policy audit_create on resqgrid.audit_logs for insert to resqgrid_api with check(actor_id=resqgrid.actor_id());
+create policy audit_read on resqgrid.audit_logs for select to resqgrid_api using(resqgrid.has_role('platform_admin'));
+-- Restrict reference/worker tables separately: workers get no citizen-details access.
+alter table resqgrid.resources enable row level security;
+create policy resources_read on resqgrid.resources for select to resqgrid_api using(resqgrid.agency_access(agency_id,'',false));
+create policy resources_update on resqgrid.resources for update to resqgrid_api using(resqgrid.has_role('agency_coordinator') and resqgrid.agency_access(agency_id,'',false)) with check(resqgrid.agency_access(agency_id,'',false));
+revoke delete on all tables in schema resqgrid from resqgrid_api;
+commit;

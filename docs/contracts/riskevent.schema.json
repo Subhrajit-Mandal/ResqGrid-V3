@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "Hazard": {
+      "enum": [
+        "flood",
+        "forest-fire",
+        "drought",
+        "heat-wave"
+      ],
+      "title": "Hazard",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "hazard": {
+      "$ref": "#/$defs/Hazard"
+    },
+    "zone_id": {
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "probability": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Probability"
+    },
+    "risk_score": {
+      "anyOf": [
+        {
+          "maximum": 100,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Risk Score"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "severity": {
+      "enum": [
+        "SAFE",
+        "LOW",
+        "MODERATE",
+        "HIGH",
+        "CRITICAL",
+        "UNKNOWN"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "MONITOR",
+        "WATCH",
+        "REVIEW_REQUIRED",
+        "WARNING_CANDIDATE",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "rule_version": {
+      "title": "Rule Version",
+      "type": "string"
+    },
+    "gates": {
+      "additionalProperties": {
+        "type": "boolean"
+      },
+      "title": "Gates",
+      "type": "object"
+    },
+    "reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Reasons",
+      "type": "array"
+    },
+    "prediction_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prediction Id"
+    },
+    "timestamp": {
+      "format": "date-time",
+      "title": "Timestamp",
+      "type": "string"
+    },
+    "recommended_actions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Recommended Actions",
+      "type": "array"
+    },
+    "source_mode": {
+      "enum": [
+        "hardware",
+        "simulated",
+        "mixed",
+        "replay"
+      ],
+      "title": "Source Mode",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "hazard",
+    "zone_id",
+    "severity",
+    "decision",
+    "rule_version",
+    "gates",
+    "reasons",
+    "timestamp",
+    "recommended_actions",
+    "source_mode"
+  ],
+  "title": "RiskEvent",
+  "type": "object"
+}

@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: resqgrid-v3-api
+    runtime: docker
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: RESQGRID_MODE
+        value: production
+      - fromGroup: resqgrid-v3-api-secrets
+  - type: worker
+    name: resqgrid-v3-ingestion
+    runtime: docker
+    dockerfilePath: ./deploy/Dockerfile
+    dockerContext: .
+    dockerCommand: python -m app.worker
+    envVars:
+      - key: RESQGRID_MODE
+        value: production
+      - fromGroup: resqgrid-v3-worker-secrets

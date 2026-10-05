@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "agency_id": {
+      "title": "Agency Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "kind": {
+      "enum": [
+        "team",
+        "vehicle",
+        "boat",
+        "equipment"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "Available",
+        "Assigned",
+        "Maintenance"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "capacity": {
+      "minimum": 0,
+      "title": "Capacity",
+      "type": "integer"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "agency_id",
+    "name",
+    "kind",
+    "status",
+    "capacity"
+  ],
+  "title": "Resource",
+  "type": "object"
+}

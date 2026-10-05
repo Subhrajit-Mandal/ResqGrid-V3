@@ -1,0 +1,6 @@
+{
+  "flood":{"status":"no_dataset_or_model","candidate_features":["rainfall_mm","water_level_m","water_level_trend","soil_moisture","temperature","humidity"],"target":null,"horizon_seconds":null},
+  "forest-fire":{"status":"post_mvp","candidate_features":["temperature","humidity","wind_speed","wind_direction","rainfall_mm","soil_moisture","smoke_ppm","vegetation_dryness"],"target":null,"horizon_seconds":null},
+  "drought":{"status":"post_mvp","candidate_features":["rainfall_deficit","soil_moisture","temperature","vegetation_index","evapotranspiration"],"target":null,"horizon_seconds":null},
+  "heat-wave":{"status":"post_mvp","candidate_features":["temperature","humidity","heat_index","night_temperature","abnormal_duration"],"target":null,"horizon_seconds":null}
+}

@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "Hazard": {
+      "enum": [
+        "flood",
+        "forest-fire",
+        "drought",
+        "heat-wave"
+      ],
+      "title": "Hazard",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "zone_id": {
+      "title": "Zone Id",
+      "type": "string"
+    },
+    "hazard": {
+      "$ref": "#/$defs/Hazard"
+    },
+    "severity": {
+      "enum": [
+        "MODERATE",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "title": {
+      "maxLength": 160,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "instructions": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "title": "Instructions",
+      "type": "string"
+    },
+    "evidence_id": {
+      "title": "Evidence Id",
+      "type": "string"
+    },
+    "source_mode": {
+      "enum": [
+        "hardware",
+        "simulated",
+        "mixed"
+      ],
+      "title": "Source Mode",
+      "type": "string"
+    },
+    "status": {
+      "default": "Draft",
+      "enum": [
+        "Draft",
+        "Published",
+        "Retracted"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "title": "Expires At",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "id",
+    "zone_id",
+    "hazard",
+    "severity",
+    "title",
+    "instructions",
+    "evidence_id",
+    "source_mode",
+    "expires_at"
+  ],
+  "title": "Alert",
+  "type": "object"
+}

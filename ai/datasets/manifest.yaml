@@ -1,0 +1,10 @@
+datasets: []
+status: awaiting_validated_dataset
+required_review:
+  - source_and_license
+  - geographic_coverage
+  - positive_and_negative_label_definition
+  - prediction_horizon
+  - missing_data_and_sensor_quality
+  - chronological_and_spatial_validation
+  - real_time_feature_availability

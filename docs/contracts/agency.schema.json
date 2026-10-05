@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "verified": {
+      "title": "Verified",
+      "type": "boolean"
+    },
+    "capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Capabilities",
+      "type": "array"
+    },
+    "zone_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Zone Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "verified",
+    "capabilities",
+    "zone_ids"
+  ],
+  "title": "Agency",
+  "type": "object"
+}

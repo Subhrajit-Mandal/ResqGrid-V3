@@ -1,0 +1,22 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "team_id": {
+      "maxLength": 80,
+      "minLength": 1,
+      "title": "Team Id",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 1,
+      "title": "Expected Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "team_id",
+    "expected_version"
+  ],
+  "title": "Assignment",
+  "type": "object"
+}
